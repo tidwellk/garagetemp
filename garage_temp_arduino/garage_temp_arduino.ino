@@ -10,7 +10,9 @@ char ssid[] = SECRET_SSID;        // your network SSID (name)
 char pass[] = SECRET_PASS;    // your network password (use for WPA, or use as key for WEP)
 int keyIndex = 0;            // your network key index number (needed only for WEP)
 
-unsigned int sendingPort = 2390;
+unsigned int serverPort = 2390;
+unsigned int listenPort = 2391;
+const char* serverIPstring = "192.168.69.164\0";
 
 WiFiUDP myudp;
 
@@ -22,7 +24,9 @@ DHT dht(DHTPIN, DHTTYPE);
 
 char sendbuffer[32];
 
-IPAddress serverIP = "192.168.69.164";
+IPAddress serverIP(serverIPstring);
+
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -59,7 +63,7 @@ void setup() {
 
 
   dht.begin();
-
+  myudp.begin(listenPort);
 }
 
 void loop() {
@@ -93,6 +97,25 @@ void loop() {
   sendHumidity(hum);
   sendHeatIndex(heatIndex);
 
+
+  // Serial.print("serverIP: ");
+  // Serial.println(serverIP);
+  // Serial.print("port: ");
+  // Serial.println(serverPort);
+}
+
+void send_udp_packet() {
+  // Serial.println(sendbuffer);
+  
+  if (myudp.beginPacket(serverIP, serverPort) == 0) {
+    Serial.println("error in beginPacket()");
+  }
+  myudp.write(sendbuffer, 6);
+  int sendstatus = myudp.endPacket();
+
+  if (sendstatus == 0) {
+    Serial.println("error in endPacket()");
+  }
 }
 
 void sendTemp(double temp) {
@@ -100,8 +123,10 @@ void sendTemp(double temp) {
   dtostrf(temp, 5, 2, sendbuffer);
   sendbuffer[5] = 'f';
   sendbuffer[6] = 0;
-  Serial.println(sendbuffer);
-  
+  //Serial.println(sendbuffer);
+
+  send_udp_packet();
+
 }
 
 void sendHumidity(double hum) {
@@ -109,8 +134,8 @@ void sendHumidity(double hum) {
   dtostrf(hum, 5, 2, sendbuffer);
   sendbuffer[5] = 'h';
   sendbuffer[6] = 0;
-  Serial.println(sendbuffer);
 
+  send_udp_packet();
 }
 
 void sendHeatIndex(double heatIndex) {
@@ -118,8 +143,9 @@ void sendHeatIndex(double heatIndex) {
   dtostrf(heatIndex, 5, 2, sendbuffer);
   sendbuffer[5] = 'i';
   sendbuffer[6] = 0;
-  Serial.println(sendbuffer);
+  // Serial.println(sendbuffer);
 
+  send_udp_packet();
 }
 
 void printWifiStatus() {

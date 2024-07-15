@@ -22,6 +22,7 @@ DHT dht(DHTPIN, DHTTYPE);
 
 char sendbuffer[32];
 
+IPAddress serverIP = "192.168.69.164";
 
 void setup() {
   // put your setup code here, to run once:
@@ -86,7 +87,38 @@ void loop() {
   
   Serial.print("\t");
   Serial.print("heat index: ");
-  Serial.println(temp);
+  Serial.println(heatIndex);
+
+  sendTemp(temp);
+  sendHumidity(hum);
+  sendHeatIndex(heatIndex);
+
+}
+
+void sendTemp(double temp) {
+
+  dtostrf(temp, 5, 2, sendbuffer);
+  sendbuffer[5] = 'f';
+  sendbuffer[6] = 0;
+  Serial.println(sendbuffer);
+  
+}
+
+void sendHumidity(double hum) {
+
+  dtostrf(hum, 5, 2, sendbuffer);
+  sendbuffer[5] = 'h';
+  sendbuffer[6] = 0;
+  Serial.println(sendbuffer);
+
+}
+
+void sendHeatIndex(double heatIndex) {
+
+  dtostrf(heatIndex, 5, 2, sendbuffer);
+  sendbuffer[5] = 'i';
+  sendbuffer[6] = 0;
+  Serial.println(sendbuffer);
 
 }
 

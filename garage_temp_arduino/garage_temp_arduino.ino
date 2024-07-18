@@ -93,9 +93,32 @@ void loop() {
   Serial.print("heat index: ");
   Serial.println(heatIndex);
 
-  sendTemp(temp);
-  sendHumidity(hum);
-  sendHeatIndex(heatIndex);
+  if (myudp.beginPacket(serverIP, serverPort) == 0) {
+    Serial.println("error in beginPacket()");
+  }
+  prepTemp(temp);
+  myudp.write(sendbuffer, 5);
+  myudp.write(' ');
+  prepHumidity(hum);
+  myudp.write(sendbuffer, 5);
+  myudp.write(' ');
+  prepHeatIndex(heatIndex);
+  myudp.write(sendbuffer, 5);
+
+  int sendstatus = myudp.endPacket();
+
+  if (sendstatus == 0) {
+    Serial.println("error in endPacket()");
+  }
+  // sendTemp(temp);
+
+  // delay(1000);
+
+  // sendHumidity(hum);
+  
+  // delay(1000);
+
+  // sendHeatIndex(heatIndex);
 
 
   // Serial.print("serverIP: ");
@@ -104,48 +127,33 @@ void loop() {
   // Serial.println(serverPort);
 }
 
-void send_udp_packet() {
-  // Serial.println(sendbuffer);
-  
-  if (myudp.beginPacket(serverIP, serverPort) == 0) {
-    Serial.println("error in beginPacket()");
-  }
-  myudp.write(sendbuffer, 6);
-  int sendstatus = myudp.endPacket();
-
-  if (sendstatus == 0) {
-    Serial.println("error in endPacket()");
-  }
-}
-
-void sendTemp(double temp) {
+void prepTemp(double temp) {
 
   dtostrf(temp, 5, 2, sendbuffer);
-  sendbuffer[5] = 'f';
-  sendbuffer[6] = 0;
+  // sendbuffer[5] = 'f';
+  sendbuffer[5] = 0;
+  // sendbuffer[6] = 0;
   //Serial.println(sendbuffer);
 
-  send_udp_packet();
-
 }
 
-void sendHumidity(double hum) {
+void prepHumidity(double hum) {
 
   dtostrf(hum, 5, 2, sendbuffer);
-  sendbuffer[5] = 'h';
-  sendbuffer[6] = 0;
+  // sendbuffer[5] = 'h';
+  // sendbuffer[6] = 0;
+  sendbuffer[5] = 0;
 
-  send_udp_packet();
 }
 
-void sendHeatIndex(double heatIndex) {
+void prepHeatIndex(double heatIndex) {
 
   dtostrf(heatIndex, 5, 2, sendbuffer);
-  sendbuffer[5] = 'i';
-  sendbuffer[6] = 0;
+  // sendbuffer[5] = 'i';
+  // sendbuffer[6] = 0;
+  sendbuffer[5] = 0;
   // Serial.println(sendbuffer);
 
-  send_udp_packet();
 }
 
 void printWifiStatus() {
